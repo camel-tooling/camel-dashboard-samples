@@ -1,0 +1,62 @@
+name: Build and publish images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - subproject: main
+            dockerfile: src/main/docker/Dockerfile
+          - subproject: quarkus
+            dockerfile: src/main/docker/Dockerfile.jvm
+          - subproject: sb
+            dockerfile: src/main/docker/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven
+        working-directory: obs-svc/${{ matrix.subproject }}
+        run: ./mvnw -B clean package
+
+      - name: Extract Camel version
+        id: camel
+        working-directory: obs-svc/${{ matrix.subproject }}
+        run: |
+          CAMEL_VERSION=$(./mvnw -B dependency:tree -Dincludes=org.apache.camel:camel-support 2>/dev/null \
+            | grep 'camel-support:jar' | head -1 \
+            | sed -n 's/.*camel-support:jar:\([^:]*\):.*/\1/p')
+          if [ -z "$CAMEL_VERSION" ]; then
+            echo "::error::Failed to extract Camel version from dependency tree"
+            exit 1
+          fi
+          echo "version=$CAMEL_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Quay.io
+        uses: docker/login-action@v4
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: obs-svc/${{ matrix.subproject }}
+          file: obs-svc/${{ matrix.subproject }}/${{ matrix.dockerfile }}
+          push: true
+          tags: quay.io/camel-tooling/sample-db-app-${{ matrix.subproject }}:${{ steps.camel.outputs.version }}
