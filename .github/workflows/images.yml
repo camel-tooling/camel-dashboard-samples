@@ -12,22 +12,22 @@ jobs:
         include:
           - app: obs-svc
             subproject: main
-            image-suffix: main
+            image-prefix: sample-db-app
           - app: obs-svc
             subproject: quarkus
-            image-suffix: quarkus
+            image-prefix: sample-db-app
           - app: obs-svc
             subproject: sb
-            image-suffix: sb
+            image-prefix: sample-db-app
           - app: regular
             subproject: main
-            image-suffix: regular-main
+            image-prefix: sample-db-regular-app
           - app: regular
             subproject: quarkus
-            image-suffix: regular-quarkus
+            image-prefix: sample-db-regular-app
           - app: regular
             subproject: sb
-            image-suffix: regular-sb
+            image-prefix: sample-db-regular-app
 
     steps:
       - uses: actions/checkout@v7
@@ -72,4 +72,4 @@ jobs:
           context: ${{ matrix.app }}/${{ matrix.subproject }}
           file: ${{ matrix.app }}/${{ matrix.subproject }}/src/main/docker/Dockerfile
           push: true
-          tags: quay.io/camel-tooling/sample-db-app-${{ matrix.image-suffix }}:${{ steps.camel.outputs.version }}
+          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}:${{ steps.camel.outputs.version }}
