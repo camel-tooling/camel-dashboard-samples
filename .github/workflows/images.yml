@@ -7,14 +7,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - subproject: main
-            dockerfile: src/main/docker/Dockerfile
-          - subproject: quarkus
-            dockerfile: src/main/docker/Dockerfile.jvm
-          - subproject: sb
-            dockerfile: src/main/docker/Dockerfile
+          - app: obs-svc
+            subproject: main
+            image-suffix: main
+          - app: obs-svc
+            subproject: quarkus
+            image-suffix: quarkus
+          - app: obs-svc
+            subproject: sb
+            image-suffix: sb
+          - app: regular
+            subproject: main
+            image-suffix: regular-main
+          - app: regular
+            subproject: quarkus
+            image-suffix: regular-quarkus
+          - app: regular
+            subproject: sb
+            image-suffix: regular-sb
 
     steps:
       - uses: actions/checkout@v7
@@ -27,12 +40,12 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven
-        working-directory: obs-svc/${{ matrix.subproject }}
+        working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
         run: ./mvnw -B clean package
 
       - name: Extract Camel version
         id: camel
-        working-directory: obs-svc/${{ matrix.subproject }}
+        working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
         run: |
           CAMEL_VERSION=$(./mvnw -B dependency:tree -Dincludes=org.apache.camel:camel-support 2>/dev/null \
             | grep 'camel-support:jar' | head -1 \
@@ -56,7 +69,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
-          context: obs-svc/${{ matrix.subproject }}
-          file: obs-svc/${{ matrix.subproject }}/${{ matrix.dockerfile }}
+          context: ${{ matrix.app }}/${{ matrix.subproject }}
+          file: ${{ matrix.app }}/${{ matrix.subproject }}/src/main/docker/Dockerfile
           push: true
-          tags: quay.io/camel-tooling/sample-db-app-${{ matrix.subproject }}:${{ steps.camel.outputs.version }}
+          tags: quay.io/camel-tooling/sample-db-app-${{ matrix.image-suffix }}:${{ steps.camel.outputs.version }}
