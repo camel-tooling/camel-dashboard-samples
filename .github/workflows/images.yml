@@ -13,10 +13,6 @@ on:
         required: false
         default: "4.22.0"
         type: string
-      image-suffix:
-        description: "The suffix for container image (ie, -redhat)"
-        required: false
-        type: string
       quarkus-platform-group-id:
         description: "The maven coordinate group (community or product)"
         required: true
@@ -93,4 +89,4 @@ jobs:
           context: ${{ matrix.app }}/${{ matrix.subproject }}
           file: ${{ matrix.app }}/${{ matrix.subproject }}/src/main/docker/Dockerfile
           push: true
-          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}${{ inputs.image-suffix }}:${{ inputs.camel-version }}
+          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}:${{ inputs.camel-version }}
