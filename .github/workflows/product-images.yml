@@ -1,4 +1,4 @@
-name: Build and publish images
+name: Publish product images
 
 on:
   workflow_dispatch:
