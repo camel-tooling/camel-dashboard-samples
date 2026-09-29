@@ -11,6 +11,7 @@
         <java.version>17</java.version>
         <project.build.outputTimestamp>2025-06-26T09:35:51Z</project.build.outputTimestamp>
         <camel.version>4.22.0</camel.version>
+        <camel.maven.plugin.version>4.22.0</camel.maven.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -93,7 +94,7 @@
             <plugin>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-maven-plugin</artifactId>
-                <version>${camel.version}</version>
+                <version>${camel.maven.plugin.version}</version>
                 <configuration>
                     <mainClass>org.example.project.randomtimertolog.CamelApplication</mainClass>
                 </configuration>
