@@ -2,6 +2,34 @@ name: Build and publish images
 
 on:
   workflow_dispatch:
+    inputs:
+      camel-version:
+        description: "The camel version to use"
+        required: false
+        default: "4.22.0"
+        type: string
+      camel-maven-plugin-version:
+        description: "The camel maven plugin version to use (may be missing in product, use the community one)"
+        required: false
+        default: "4.22.0"
+        type: string
+      image-suffix:
+        description: "The suffix for container image (ie, -redhat)"
+        required: false
+        type: string
+      quarkus-platform-group-id:
+        description: "The maven coordinate group (community or product)"
+        required: true
+        default: "io.quarkus.platform"
+        type: choice
+        options:
+          - io.quarkus.platform
+          - com.redhat.quarkus.platform
+      quarkus-platform-version:
+        description: "The quarkus platform version to use"
+        required: false
+        default: "3.39.1"
+        type: string
 
 jobs:
   build:
@@ -41,20 +69,12 @@ jobs:
 
       - name: Build with Maven
         working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
-        run: ./mvnw -B clean package
-
-      - name: Extract Camel version
-        id: camel
-        working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
         run: |
-          CAMEL_VERSION=$(./mvnw -B dependency:tree -Dincludes=org.apache.camel:camel-support 2>/dev/null \
-            | grep 'camel-support:jar' | head -1 \
-            | sed -n 's/.*camel-support:jar:\([^:]*\):.*/\1/p')
-          if [ -z "$CAMEL_VERSION" ]; then
-            echo "::error::Failed to extract Camel version from dependency tree"
-            exit 1
-          fi
-          echo "version=$CAMEL_VERSION" >> "$GITHUB_OUTPUT"
+          ./mvnw -B clean package \
+            -Dcamel.version=${{ inputs.camel-version }} \
+            -Dcamel.maven.plugin.version=${{ inputs.camel-maven-plugin-version }} \
+            -Dquarkus.platform.group-id=${{ inputs.quarkus-platform-group-id }} \
+            -Dquarkus.platform.version=${{ inputs.quarkus-platform-version }}
 
       - name: Login to Quay.io
         uses: docker/login-action@v4
@@ -72,4 +92,4 @@ jobs:
           context: ${{ matrix.app }}/${{ matrix.subproject }}
           file: ${{ matrix.app }}/${{ matrix.subproject }}/src/main/docker/Dockerfile
           push: true
-          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}:${{ steps.camel.outputs.version }}
+          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}${{ inputs.quarkus-platform-version }}:${{ inputs.camel-version }}
