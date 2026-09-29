@@ -3,28 +3,17 @@ name: Build and publish images
 on:
   workflow_dispatch:
     inputs:
-      camel-version:
-        description: "The camel version to use"
-        required: false
-        default: "4.22.0"
-        type: string
-      camel-maven-plugin-version:
-        description: "The camel maven plugin version to use (may be missing in product, use the community one)"
-        required: false
-        default: "4.22.0"
-        type: string
-      quarkus-platform-group-id:
-        description: "The maven coordinate group (community or product)"
+      camel-spring-boot-version:
+        description: "The Camel version to use for Spring Boot (see https://access.redhat.com/articles/7021827?#headerCSB)"
         required: true
-        default: "io.quarkus.platform"
-        type: choice
-        options:
-          - io.quarkus.platform
-          - com.redhat.quarkus.platform
+        type: string
       quarkus-platform-version:
-        description: "The quarkus platform version to use"
-        required: false
-        default: "3.39.1"
+        description: "The Quarkus platform version to use"
+        required: true
+        type: string
+      container-label:
+        description: "The label to use for these images (ie, 4.18.x-redhat)"
+        required: true
         type: string
 
 jobs:
@@ -35,17 +24,11 @@ jobs:
       matrix:
         include:
           - app: obs-svc
-            subproject: main
-            image-prefix: sample-db-app
-          - app: obs-svc
             subproject: quarkus
             image-prefix: sample-db-app
           - app: obs-svc
             subproject: sb
             image-prefix: sample-db-app
-          - app: regular
-            subproject: main
-            image-prefix: sample-db-regular-app
           - app: regular
             subproject: quarkus
             image-prefix: sample-db-regular-app
@@ -67,9 +50,8 @@ jobs:
         working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
         run: |
           ./mvnw -B clean package \
-            -Dcamel.version=${{ inputs.camel-version }} \
-            -Dcamel.maven.plugin.version=${{ inputs.camel-maven-plugin-version }} \
-            -Dquarkus.platform.group-id=${{ inputs.quarkus-platform-group-id }} \
+            -Dcamel.version=${{ inputs.camel-spring-boot-version }} \
+            -Dquarkus.platform.group-id=com.redhat.quarkus.platform \
             -Dquarkus.platform.version=${{ inputs.quarkus-platform-version }} \
             -s ../../rh-ga-settings.xml
 
@@ -89,4 +71,4 @@ jobs:
           context: ${{ matrix.app }}/${{ matrix.subproject }}
           file: ${{ matrix.app }}/${{ matrix.subproject }}/src/main/docker/Dockerfile
           push: true
-          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}:${{ inputs.camel-version }}
+          tags: quay.io/camel-tooling/${{ matrix.image-prefix }}-${{ matrix.subproject }}:${{ inputs.container-label }}
