@@ -13,6 +13,11 @@ on:
         required: false
         default: "3.39.1"
         type: string
+      spring-boot-version:
+        description: "The Spring Boot version to use"
+        required: false
+        default: "4.0.6"
+        type: string
 
 jobs:
   build:
@@ -53,8 +58,11 @@ jobs:
       - name: Build with Maven
         working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
         run: |
+          sed -i "s|<!-- you can change this --><version>[^<]*</version>|<!-- you can change this --><version>${{ inputs.spring-boot-version }}</version>|" pom.xml
+
           ./mvnw -B clean package \
             -Dcamel.version=${{ inputs.camel-version }} \
+            -Dspring-boot.version=${{ inputs.spring-boot-version }} \
             -Dcamel.maven.plugin.version=${{ inputs.camel-version }} \
             -Dquarkus.platform.version=${{ inputs.quarkus-platform-version }}
 

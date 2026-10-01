@@ -7,8 +7,12 @@ on:
         description: "The Camel version to use for Spring Boot (see https://access.redhat.com/articles/7021827?#headerCSB)"
         required: true
         type: string
+      spring-boot-version:
+        description: "The Spring Boot version to use (see https://access.redhat.com/articles/7021827?#headerCSB)"
+        required: false
+        type: string
       quarkus-platform-version:
-        description: "The Quarkus platform version to use"
+        description: "The Quarkus platform version to use (https://access.redhat.com/articles/7021827?#headerCEQ)"
         required: true
         type: string
       container-label:
@@ -49,8 +53,11 @@ jobs:
       - name: Build with Maven
         working-directory: ${{ matrix.app }}/${{ matrix.subproject }}
         run: |
+          sed -i "s|<!-- you can change this --><version>[^<]*</version>|<!-- you can change this --><version>${{ inputs.spring-boot-version }}</version>|" pom.xml
+
           ./mvnw -B clean package \
             -Dcamel.version=${{ inputs.camel-spring-boot-version }} \
+            -Dspring-boot.version=${{ inputs.spring-boot-version }} \
             -Dquarkus.platform.group-id=com.redhat.quarkus.platform \
             -Dquarkus.platform.version=${{ inputs.quarkus-platform-version }} \
             -s ../../rh-ga-settings.xml
