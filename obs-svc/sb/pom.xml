@@ -19,6 +19,7 @@
         <project.build.outputTimestamp>2025-06-26T09:36:29Z</project.build.outputTimestamp>
         <camel.version>4.22.0</camel.version>
         <spring-boot.version>4.0.6</spring-boot.version>
+        <spring-boot.platform.group-id>org.apache.camel.springboot</spring-boot.platform.group-id>
     </properties>
 
     <dependencyManagement>
@@ -33,7 +34,7 @@
             </dependency>
             <!-- Camel BOM -->
             <dependency>
-                <groupId>org.apache.camel.springboot</groupId>
+                <groupId>${spring-boot.platform.group-id}</groupId>
                 <artifactId>camel-spring-boot-bom</artifactId>
                 <version>${camel.version}</version>
                 <type>pom</type>

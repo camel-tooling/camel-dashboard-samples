@@ -55,9 +55,13 @@ jobs:
         run: |
           sed -i "s|<!-- you can change this --><version>[^<]*</version>|<!-- you can change this --><version>${{ inputs.spring-boot-version }}</version>|" pom.xml
 
+          sed -i '/<!-- Spring Boot BOM -->/,/<!-- Camel BOM -->/{
+              /<!-- Camel BOM -->/!d
+          }' pom.xml
+
           ./mvnw -B clean package \
             -Dcamel.version=${{ inputs.camel-spring-boot-version }} \
-            -Dspring-boot.version=${{ inputs.spring-boot-version }} \
+            -Dspring-boot.platform.group-id=com.redhat.camel.springboot.platform \
             -Dquarkus.platform.group-id=com.redhat.quarkus.platform \
             -Dquarkus.platform.version=${{ inputs.quarkus-platform-version }} \
             -s ../../rh-ga-settings.xml
