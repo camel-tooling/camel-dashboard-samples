@@ -2,6 +2,13 @@
 
 You can use the published applications provided in this repository to simulate some random execution and failure. The container images are tagged after the Camel version that they support.
 
+The application controls two environment variables which you can use to throttle the number of messages and change the error percentage of simulated errors:
+
+```
+MESSAGE_RATE_PER_MINUTE # default, 60
+ERROR_PERCENTAGE        # default, 10
+```
+
 > NOTE: just replace the version with any existing released version.
 
 ## Camel Observability Services
@@ -21,6 +28,12 @@ The applications under `/regular` directory are equipped with `camel-health` and
 * docker run -it quay.io/camel-tooling/sample-db-regular-app-sb:4.22.0
 
 ## Release process
+
+### Automatic process
+
+This repository has a release process that can be triggered manually using Github actions. It produces applications that are stored in https://quay.io/organization/camel-tooling repository.
+
+### Manual process
 
 It is convenient to bump each new release when all Camel runtimes are available to support (at least every minor version).
 
