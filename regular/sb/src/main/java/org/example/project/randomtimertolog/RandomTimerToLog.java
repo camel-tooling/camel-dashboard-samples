@@ -1,9 +1,11 @@
 package org.example.project.randomtimertolog;
 
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.apache.camel.builder.RouteBuilder;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class RandomTimerToLog extends RouteBuilder {
 
     private static final int DEFAULT_RATE_PER_MINUTE = 60;

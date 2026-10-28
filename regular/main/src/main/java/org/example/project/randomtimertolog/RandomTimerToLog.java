@@ -1,7 +1,6 @@
 package org.example.project.randomtimertolog;
 
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.apache.camel.builder.RouteBuilder;
 
 public class RandomTimerToLog extends RouteBuilder {
