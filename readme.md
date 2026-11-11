@@ -2,12 +2,12 @@
 
 You can use the published applications provided in this repository to simulate some random execution and failure. The container images are tagged after the Camel version that they support.
 
-The application controls two environment variables which you can use to throttle the number of messages and change the error percentage of simulated errors:
+The application controls three environment variables which you can use to throttle the number of messages, change the error percentage of simulated errors and make the health endpoint fail randomly:
 
 ```
 MESSAGE_RATE_PER_MINUTE             # default, 60
 ERROR_PERCENTAGE                    # default, 10
-DEFAULT_HEALTH_FAIL_PERCENTAGE      # default, 0
+HEALTH_FAIL_PERCENTAGE              # default, 0 (health is always UP)
 ```
 
 > NOTE: just replace the version with any existing released version.
@@ -27,6 +27,40 @@ The applications under `/regular` directory are equipped with `camel-health` and
 * docker run -it quay.io/camel-tooling/sample-db-regular-app-main:4.22.0
 * docker run -it quay.io/camel-tooling/sample-db-regular-app-quarkus:4.22.0
 * docker run -it quay.io/camel-tooling/sample-db-regular-app-sb:4.22.0
+
+## Run on Kubernetes and monitor with Camel Monitor
+
+Any of the images above can be deployed as a regular `Deployment`. The [Camel Monitor Operator](https://github.com/camel-tooling/camel-monitor-operator) must be installed in the cluster.
+
+```bash
+kubectl create deployment camel-app --image=quay.io/camel-tooling/sample-db-app-main:4.22.0
+```
+
+To let the operator discover and monitor the application, label the `Deployment` with `camel.apache.org/monitor`. The value is the name of the monitor that will group the applications:
+
+```bash
+kubectl label deployment camel-app camel.apache.org/monitor=camel-sample
+```
+
+The operator creates the related `CamelMonitor` resource and starts to collect health and metrics from the application pods. Removing the label stops the monitoring:
+
+```bash
+kubectl label deployment camel-app camel.apache.org/monitor-
+```
+
+### Tune the application behavior
+
+The behavior is controlled by the environment variables listed above. You can change them on a running `Deployment` (the pods are restarted to apply them):
+
+```bash
+# 120 messages per minute, 30% of them failing and the health endpoint failing 20% of the time
+kubectl set env deployment/camel-app MESSAGE_RATE_PER_MINUTE=120 ERROR_PERCENTAGE=30 HEALTH_FAIL_PERCENTAGE=20
+
+# Go back to the defaults
+kubectl set env deployment/camel-app MESSAGE_RATE_PER_MINUTE- ERROR_PERCENTAGE- HEALTH_FAIL_PERCENTAGE-
+```
+
+> NOTE: with `HEALTH_FAIL_PERCENTAGE` greater than 0 the application randomly reports DOWN. If a liveness probe is configured, Kubernetes may restart the pod.
 
 ## Release process
 
