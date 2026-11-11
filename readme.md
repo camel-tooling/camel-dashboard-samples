@@ -5,8 +5,9 @@ You can use the published applications provided in this repository to simulate s
 The application controls two environment variables which you can use to throttle the number of messages and change the error percentage of simulated errors:
 
 ```
-MESSAGE_RATE_PER_MINUTE # default, 60
-ERROR_PERCENTAGE        # default, 10
+MESSAGE_RATE_PER_MINUTE             # default, 60
+ERROR_PERCENTAGE                    # default, 10
+DEFAULT_HEALTH_FAIL_PERCENTAGE      # default, 0
 ```
 
 > NOTE: just replace the version with any existing released version.
